@@ -11,6 +11,7 @@ class VerkadaDB():
     def __init__(self):
         self._data = {}
 
+#class for user
 class user:
     def __init__(self, name, domain, topLevelName, age, gender, nationality):
         self.age = age
@@ -20,6 +21,7 @@ class user:
         self.domain = domain
         self.topLevelName = topLevelName
 
+#class for final answer
 class finalAns:
     def __init__(self, name, queryDataAsJSON, dataBaseContentsAsJSON, responseToQ1, responseToQ2):
         self.name = name
@@ -58,6 +60,7 @@ def lambda_handler(json_input):
     ## Output: JSON String which mimics AWS Lambda Output
     return json_output
 
+#functions to make API calls and extract information
 def get_age(name):
     url = "https://api.agify.io/?name=" + name
     return requests.get(url).json()['age']
@@ -90,6 +93,7 @@ def addUser(user):
 
 #helper method used by queryUser, updateUser, and deleteUser
 def queryHelper(name, gender, nationality, topLevelName, domain):
+    #creating a key that matches with different keys of the dictionary
     key = "(.)*#"
     if(name != None):
         key = key + name + "#"
@@ -161,7 +165,8 @@ def updateUser(name, ageMin, ageMax, gender, nationality, topLevelName, domain, 
             dbInstance._data[newKey] = user
             del(dbInstance._data[key])
 
-
+#This function supports a lot of functionalities. For example: Delete all users who are named Karen, live in US, and are females
+#The query will for this example will be deleteUser("Karen", None, None, "female", "US", None, None)
 def deleteUser(name, ageMin, ageMax, gender, nationality, topLevelName, domain):
     listOfUserKeys = queryHelper(name, gender, nationality, topLevelName, domain)
     for key in listOfUserKeys:
@@ -205,6 +210,7 @@ ans = []
 for i in range(4):
     ans.append(queryList[i]['name'])
 
+#creating final answer
 name = "Vimanyu Saxena"
 queryDataAsJSON = json.dumps(ans)
 dataBaseContentsAsJSON = json.dumps(dbInstance._data)
@@ -212,6 +218,8 @@ responseToQ1 = "As sales representatives collect data from the customers, I woul
 responseToQ2 = "We can use Verkada cameras outside of shopping malls and stores to detect people. We can use their images \nto extract their age and gender. After getting this information, we can extract information from \nthe shopping bag they are holding in the image and try to map a pattern between age, gender, and the \ntypes of items that the store usually sells. With this, we can target people with the items \nthat are most popular according to their age and gender. Scaling up by integrating verkada cameras outside all \nstores in a location or a country can give us a lot of location specific data that we can use for revenue \ngeneration. Another idea is to install Verkada cameras in public places so we can see which people are wearing what \nkind of clothes or using different kinds of items. We can extract items' and products' information they are using and \nmap to the age, gender and location information extracted from their image and use that for future campaigns."
 
 finalAns = finalAns(name, queryDataAsJSON, dataBaseContentsAsJSON, responseToQ1, responseToQ2)
+
+#creating POST API request
 url = "https://rwph529xx9.execute-api.us-west-1.amazonaws.com/prod/pushToSlack"
 x = requests.post(url, json.loads(json.dumps(finalAns.__dict__)))
 print(x.text)
